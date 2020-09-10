@@ -85,6 +85,8 @@ export class Updater {
     // Commit the result to the update branch:
     await this.commitUpdateBranch(baseCommit, update)
     this.pushUpdateBranch(baseBranch, update)
+
+    this.createUpdatePR(baseBranch, update)
   }
 
   private async checkoutUpdateBranch(
@@ -142,7 +144,7 @@ export class Updater {
     // nodegit supports remotes, but we'd have to reconfigure credentials.
     // Let's (ab)use the credentials setup by actions/checkout
     const targetBranch = this.branchName(baseBranch, update)
-    cp.execSync(`git push -u origin ${targetBranch}`).toString()
+    cp.execSync(`git push -fu origin ${targetBranch}`).toString()
   }
 
   private async gitRepo(): Promise<Repository> {
@@ -151,6 +153,20 @@ export class Updater {
       this._repo = await Repository.open(path)
     }
     return this._repo
+  }
+
+  private async createUpdatePR(
+    baseBranch: string,
+    update: Update
+  ): Promise<void> {
+    await this.octokit.pulls.create({
+      owner: this.owner,
+      repo: this.repo,
+      head: this.branchName(baseBranch, update),
+      base: baseBranch,
+      title: `Update ${update.dependency} from ${update.previous} to ${update.next}`,
+      body: `Here is ${update.dependency} v${update.next}. Good luck`
+    })
   }
 
   /**
