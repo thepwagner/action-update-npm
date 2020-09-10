@@ -10,4 +10,7 @@ jobs:
       - uses: actions/setup-node@v2-beta
         with:
           node-version: '12'
+          registry-url: 'https://npm.pkg.github.com'
       - uses: thepwagner/action-update-npm@main
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.MY_GITHUB_PAT }}
