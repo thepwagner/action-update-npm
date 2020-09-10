@@ -94,6 +94,7 @@ export class Updater {
     const targetBranch = `action-update-npm/${baseBranch}/${update.dependency}/${update.next}`
     core.debug(`switching to update branch: ${targetBranch}`)
     const repo = await this.gitRepo()
+    console.log(repo)
     const baseCommit = await repo.getBranchCommit(baseBranch)
     await repo.createBranch(targetBranch, baseCommit, true)
     await repo.checkoutBranch(targetBranch, {
@@ -142,7 +143,8 @@ export class Updater {
 
   private async gitRepo(): Promise<Repository> {
     if (!this._repo) {
-      this._repo = await Repository.open('.')
+      const path = process.env.GITHUB_WORKSPACE || '.'
+      this._repo = await Repository.open(path)
     }
     return this._repo
   }
