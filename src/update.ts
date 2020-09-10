@@ -84,23 +84,26 @@ export class Updater {
 
     // Commit the result to the update branch:
     await this.commitUpdateBranch(baseCommit, update)
-    this.pushUpdateBranch()
+    this.pushUpdateBranch(baseBranch, update)
   }
 
   private async checkoutUpdateBranch(
     baseBranch: string,
     update: Update
   ): Promise<Commit> {
-    const targetBranch = `action-update-npm/${baseBranch}/${update.dependency}/${update.next}`
+    const targetBranch = this.branchName(baseBranch, update)
     core.debug(`switching to update branch: ${targetBranch}`)
     const repo = await this.gitRepo()
-    console.log(repo)
     const baseCommit = await repo.getBranchCommit(baseBranch)
     await repo.createBranch(targetBranch, baseCommit, true)
     await repo.checkoutBranch(targetBranch, {
       checkoutStrategy: Checkout.STRATEGY.FORCE
     })
     return baseCommit
+  }
+
+  private branchName(baseBranch: string, update: Update): string {
+    return `action-update-npm/${baseBranch}/${update.dependency}/${update.next}`
   }
 
   private npmCommand(args: string): void {
@@ -135,10 +138,11 @@ export class Updater {
     ])
   }
 
-  private pushUpdateBranch(): void {
+  private pushUpdateBranch(baseBranch: string, update: Update): void {
     // nodegit supports remotes, but we'd have to reconfigure credentials.
     // Let's (ab)use the credentials setup by actions/checkout
-    cp.execSync(`git push`).toString()
+    const targetBranch = this.branchName(baseBranch, update)
+    cp.execSync(`git push -u origin ${targetBranch}`).toString()
   }
 
   private async gitRepo(): Promise<Repository> {
