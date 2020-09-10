@@ -29,7 +29,7 @@
     "@actions/github": "^4.0.0",
     "@octokit/rest": "^18.0.4",
     "@octokit/webhooks": "^7.11.2",
-    "lodash": "4.17.10",
+    "lodash": "^4.17.20",
     "nodegit": "^0.27.0",
     "semver": "^7.3.1"
   },
